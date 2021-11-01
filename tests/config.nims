@@ -1,1 +1,1 @@
---path:"../src"
+switch("path", "$projectDir/../src")
