@@ -43,10 +43,10 @@ suite "serialize":
     doAssert ser.toString("123") == "\"123\""
   
   test "char":
-    doAssert ser.toString('1') == "1"
+    doAssert ser.toString('1') == "\"1\""
   
   test "bytes":
-    doAssert ser.toString(['0'.byte, '1'.byte]) == "01"
+    doAssert ser.toString(['0'.byte, '1'.byte]) == "[48,49]"
   
   test "none":
     doAssert ser.toString(none int) == "null"
