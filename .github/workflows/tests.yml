@@ -6,6 +6,11 @@ on:
       - master
     path-ignore:
       - 'README.md'
+  push:
+    branches:
+      - master
+    path-ignore:
+      - 'README.md'
   release:
     types: [published]
 
