@@ -17,9 +17,6 @@ type
   Compound*[F] = object
     ser*: ptr JsonSerializer[F]
     state*: State
-  
-  MapKeySerializer*[F] = object
-    ser*: ptr JsonSerializer[F]
 
   # Aliases
   SerializeArray[F] = Compound[F]
