@@ -1,4 +1,5 @@
 discard """
+  matrix: "; -d:release; --gc:orc; -d:release --gc:orc"
   cmd: "nim $target --hints:on -d:testing $options $file"
 """
 

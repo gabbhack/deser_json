@@ -41,7 +41,4 @@ jobs:
         run: nimble install -d -y
       
       - name: Run tests
-        run: nimble test -y
-      
-      - name: Run tests --gc:orc
-        run: nimble test --gc:orc -y
+        run: nimble test
