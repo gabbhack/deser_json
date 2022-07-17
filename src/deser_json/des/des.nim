@@ -27,7 +27,7 @@ proc raiseUnexpectedError(self: Deserializer, expected, unexpected: sink string)
 
 
 when defined(release):
-  {.push inline, noInit, checks: off.}
+  {.push noinit, inline, checks: off.}
 
 implSeqAccess(SeqAccess, public=true)
 implMapAccess(MapAccess, public=true)
@@ -53,6 +53,7 @@ template eatChar(self: var Deserializer, c: char) =
 
 
 proc parseBool(self: var Deserializer): bool =
+  result = default(bool)
   parseHook(self.source, self.pos, result)
 
 
@@ -70,18 +71,22 @@ proc parseInteger(self: var Deserializer, T: typedesc[SomeInteger]): T =
     else:
       self.raiseUnexpectedError($T, $temp)
   else:
+    result = default(T)
     parseHook(self.source, self.pos, result)
 
 
 proc parseFloat(self: var Deserializer, T: typedesc[SomeFloat]): T =
+  result = default(T)
   parseHook(self.source, self.pos, result)
 
 
 proc parseChar(self: var Deserializer): char =
+  result = default(char)
   parseHook(self.source, self.pos, result)
 
 
 proc parseString(self: var Deserializer): string =
+  result = default(string)
   parseHook(self.source, self.pos, result)
 
 
