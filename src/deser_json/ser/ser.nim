@@ -219,7 +219,7 @@ proc toString*(value: auto): string =
 proc toPrettyString*(value: auto): string =
   mixin serialize
 
-  var ser = initJsonSerializer(initPrettyFormatter())
+  var ser = initJsonSerializer(initPrettyFormatter([' ', ' ', ' ', ' ']))
   value.serialize(ser)
   result = ser.writer
 
