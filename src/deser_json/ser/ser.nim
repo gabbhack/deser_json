@@ -1,12 +1,13 @@
-import std/[options]
-import faststreams/[outputs]
+import std/[
+  options
+]
 import deser
 
 import formatter
 
 type
-  JsonSerializer*[F: Formatter] = object
-    writer: OutputStream
+  JsonSerializer*[F] = object
+    writer: string
     formatter: F
   
   State* = enum
@@ -21,89 +22,95 @@ type
   # Aliases
   SerializeArray[F] = Compound[F]
   SerializeSeq[F] = Compound[F]
-  SerializeTuple[F] = Compound[F]
-  SerializeNamedTuple[F] = Compound[F]
   SerializeMap[F] = Compound[F]
   SerializeStruct[F] = Compound[F]
-  SerializeSeqMap[F] = Compound[F]
 
 # Serializer impl
-{.push inline.}
+when defined(release):
+  {.push inline.}
 # Utils
-proc initJsonSerializer*[F](writer: OutputStream, formatter: F): JsonSerializer[F] =
-  result = JsonSerializer[F](writer: writer, formatter: formatter)
+proc initJsonSerializer*[F](formatter: F): JsonSerializer[F] =
+  result = JsonSerializer[F](writer: newStringOfCap(64), formatter: formatter)
+
 
 proc initCompound*[F](ser: var JsonSerializer[F], state: State): Compound[F] =
   result = Compound[F](ser: ser.addr, state: state)
 
-# Forward declaration
-# Array
-proc serializeArray*[F](self: var JsonSerializer[F], len: static[int]): SerializeArray[F]
-proc serializeArrayElement*[F; T](self: var SerializeArray[F], v: T)
-proc endArray*[F](self: var SerializeArray[F])
-# Seq
-proc serializeSeq*[F](self: var JsonSerializer[F], len: Option[int]): SerializeSeq[F]
-proc serializeSeqElement*[F; T](self: var SerializeSeq[F], v: T)
-proc endSeq*[F](self: var SerializeSeq[F])
-# Tuple
-proc serializeTuple*[F](self: var JsonSerializer[F], name: static[string], len: static[int]): SerializeTuple[F]
-proc serializeTupleElement*[F; T](self: var SerializeTuple[F], v: T)
-proc endTuple*[F](self: var SerializeTuple[F])
-# NamedTuple
-proc serializeNamedTuple*[F](self: var JsonSerializer[F], name: static[string], len: static[int]): SerializeNamedTuple[F]
-proc serializeNamedTupleField*[F; T](self: var SerializeNamedTuple[F], key: static[string], v: T)
-proc endNamedTuple*[F](self: var SerializeNamedTuple[F])
-# SerializeMap
-proc serializeMap*[F](self: var JsonSerializer[F], len: Option[int]): SerializeMap[F]
-proc serializeMapKey*[F; T](self: var SerializeMap[F], key: T)
-proc serializeMapValue*[F; T](self: var SerializeMap[F], v: T)
-proc endMap*[F](self: var SerializeMap[F])
-# SerializeStruct
-proc serializeStruct*[F](self: var JsonSerializer[F], name: static[string]): SerializeStruct[F]
-proc serializeStructField*[F; T](self: var SerializeStruct[F], key: static[string], v: T)
-proc endStruct*[F](self: var SerializeStruct[F])
-# SerializeSeqMap
-proc serializeSeqMap*[F](self: var JsonSerializer[F], len: Option[int]): SerializeSeqMap[F]
-proc serializeSeqMapKey*[F; T](self: var SerializeSeqMap[F], key: T)
-proc serializeSeqMapValue*[F; T](self: var SerializeSeqMap[F], v: T)
-proc endSeqMap*[F](self: var SerializeSeqMap[F])
+implSerializer(JsonSerializer, public=true)
 
 # Implementation
-proc serializeBool*[F](self: var JsonSerializer[F], v: bool) =
-  self.formatter.writeBool(self.writer, v)
+proc serializeBool(self: var JsonSerializer, value: bool) =
+  self.formatter.writeBool(self.writer, value)
 
-proc serializeInt*[F](self: var JsonSerializer[F], v: SomeInteger) =
-  self.formatter.writeInt(self.writer, v)
 
-proc serializeFloat*[F](self: var JsonSerializer[F], v: SomeFloat) =
-  self.formatter.writeFloat(self.writer, v)
+proc serializeInt8*(self: var JsonSerializer, value: int8) =
+  self.formatter.writeInt(self.writer, value)
 
-proc serializeString*[F](self: var JsonSerializer[F], v: string) =
-  formatEscapedStr(self.writer, self.formatter, v)
 
-proc serializeChar*[F](self: var JsonSerializer[F], v: char) =
-  self.serializeString($v)
+proc serializeInt16*(self: var JsonSerializer, value: int16) =
+  self.formatter.writeInt(self.writer, value)
 
-proc serializeBytes*[F](self: var JsonSerializer[F], v: openArray[byte]) =
-  var state = self.serializeSeq(some v.len)
-  for b in v:
+
+proc serializeInt32*(self: var JsonSerializer, value: int32) =
+  self.formatter.writeInt(self.writer, value)
+
+
+proc serializeInt64*(self: var JsonSerializer, value: int64) =
+  self.formatter.writeInt(self.writer, value)
+
+
+proc serializeUint8*(self: var JsonSerializer, value: uint8) =
+  self.formatter.writeInt(self.writer, value)
+
+
+proc serializeUint16*(self: var JsonSerializer, value: uint16) =
+  self.formatter.writeInt(self.writer, value)
+
+
+proc serializeUint32*(self: var JsonSerializer, value: uint32) =
+  self.formatter.writeInt(self.writer, value)
+
+
+proc serializeUint64*(self: var JsonSerializer, value: uint64) =
+  self.formatter.writeInt(self.writer, value)
+
+
+proc serializeFloat32*(self: var JsonSerializer, value: float32) =
+  self.formatter.writeFloat(self.writer, value)
+
+
+proc serializeFloat64*(self: var JsonSerializer, value: float64) =
+  self.formatter.writeFloat(self.writer, value)
+
+
+proc serializeString*(self: var JsonSerializer, value: string) =
+  formatEscapedStr(self.writer, self.formatter, value)
+
+
+proc serializeChar(self: var JsonSerializer, value: char) =
+  self.serializeString($value)
+
+
+proc serializeBytes*(self: var JsonSerializer, value: openArray[byte]) =
+  var state = self.serializeSeq(some value.len)
+  for b in value:
     state.serializeSeqElement(b)
   state.endSeq()
 
-proc serializeNone*[F](self: var JsonSerializer[F]) =
+
+proc serializeNone*(self: var JsonSerializer) =
   self.formatter.writeNull(self.writer)
 
-proc serializeSome*[F; T](self: var JsonSerializer[F], v: T) =
-  v.serialize(self)
 
-proc serializeUnitStruct*[F](self: var JsonSerializer[F], name: static[string]) =
-  self.serializeNone()
+proc serializeSome*(self: var JsonSerializer, value: auto)=
+  mixin serialize
 
-proc serializeUnitTuple*[F](self: var JsonSerializer[F], name: static[string]) =
-  self.serializeNone()
+  value.serialize(self)
 
-proc serializeArray*[F](self: var JsonSerializer[F], len: static[int]): SerializeArray[F] =
-  result = serializeSeq[F](self, some len)
+
+proc serializeEnum*(self: var JsonSerializer, value: enum) =
+  self.serializeString($value)
+
 
 proc serializeSeq*[F](self: var JsonSerializer[F], len: Option[int]): SerializeSeq[F] =
   self.formatter.beginArray(self.writer)
@@ -113,11 +120,10 @@ proc serializeSeq*[F](self: var JsonSerializer[F], len: Option[int]): SerializeS
   else:
     result = initCompound[F](self, State.First)
 
-proc serializeTuple*[F](self: var JsonSerializer[F], name: static[string], len: static[int]): SerializeTuple[F] =
+
+proc serializeArray*[F](self: var JsonSerializer[F], len: static[int]): SerializeArray[F] =
   result = serializeSeq[F](self, some len)
 
-proc serializeNamedTuple*[F](self: var JsonSerializer[F], name: static[string], len: static[int]): SerializeNamedTuple[F] =
-  result = serializeMap[F](self, some len)
 
 proc serializeMap*[F](self: var JsonSerializer[F], len: Option[int]): SerializeMap[F] =
   self.formatter.beginObject(self.writer)
@@ -127,95 +133,95 @@ proc serializeMap*[F](self: var JsonSerializer[F], len: Option[int]): SerializeM
   else:
     result = initCompound[F](self, State.First)
 
+
 proc serializeStruct*[F](self: var JsonSerializer[F], name: static[string]): SerializeStruct[F] =
   result = serializeMap[F](self, none int)
 
-proc serializeSeqMap*[F](self: var JsonSerializer[F], len: Option[int]): SerializeSeqMap[F] =
-  result = serializeMap[F](self, len)
 
 # SerializeArray impl
-proc serializeArrayElement*[F; T](self: var SerializeArray[F], v: T) =
-  self.serializeSeqElement(v)
+implSerializeArray(SerializeArray, public=true)
 
-proc endArray*[F](self: var SerializeArray[F]) =
+proc serializeArrayElement*(self: var SerializeArray, value: auto) =
+  self.serializeSeqElement(value)
+
+
+proc endArray*(self: var SerializeArray) =
   self.endSeq()
 
+
 # SerializeSeq impl
-proc serializeSeqElement*[F; T](self: var SerializeSeq[F], v: T) =
+implSerializeSeq(SerializeSeq, public=true)
+
+proc serializeSeqElement*(self: var SerializeSeq, value: auto) =
+  mixin serialize
+
   self.ser[].formatter.beginArrayValue(self.ser[].writer, self.state == State.First)
 
   self.state = State.Rest
-  v.serialize(self.ser[])
+  value.serialize(self.ser[])
   self.ser[].formatter.endArrayValue(self.ser[].writer)
 
   
-proc endSeq*[F](self: var SerializeSeq[F]) =
+proc endSeq*(self: var SerializeSeq) =
   if self.state != State.Empty:
     self.ser[].formatter.endArray(self.ser[].writer)
 
-# SerializeTuple impl
-proc serializeTupleElement*[F; T](self: var SerializeTuple[F], v: T) =
-  self.serializeSeqElement(v)
-
-proc endTuple*[F](self: var SerializeTuple[F]) =
-  self.endSeq()
-
-# SerializeNamedTuple impl
-proc serializeNamedTupleField*[F; T](self: var SerializeNamedTuple[F], key: static[string], v: T) =
-  self.serializeMapEntry(key, v)
-
-proc endNamedTuple*[F](self: var SerializeNamedTuple[F]) =
-  self.endMap()
 
 # SerializeMap impl
-proc serializeMapKey*[F; T](self: var SerializeMap[F], key: T) =
-  when T is string:
+implSerializeMap(SerializeMap, public=true)
+
+proc serializeMapKey*(self: var SerializeMap, key: auto) =
+  mixin serialize
+
+  when key isnot string:
+    {.error: "Key must be string not " & $type(key).}
+  else:
     self.ser[].formatter.beginObjectKey(self.ser[].writer, self.state == State.First)
     self.state = State.Rest
 
     key.serialize(self.ser[])
 
     self.ser[].formatter.endObjectKey(self.ser[].writer)
-  else:
-    {.error: "Map key must be a string".}
 
-proc serializeMapValue*[F; T](self: var SerializeMap[F], v: T) =
+
+proc serializeMapValue*(self: var SerializeMap, value: auto) =
+  mixin serialize
+
   self.ser[].formatter.beginObjectValue(self.ser[].writer)
-  v.serialize(self.ser[])
+  value.serialize(self.ser[])
   self.ser[].formatter.endObjectValue(self.ser[].writer)
 
-proc endMap*[F](self: var SerializeMap[F]) =
+
+proc endMap*(self: var SerializeMap) =
   if self.state != State.Empty:
     self.ser[].formatter.endObject(self.ser[].writer)
 
+
 # SerializeStruct impl
-proc serializeStructField*[F; T](self: var SerializeStruct[F], key: static[string], v: T) =
-  self.serializeMapEntry(key, v)
+implSerializeStruct(SerializeStruct, public=true)
 
-proc endStruct*[F](self: var SerializeStruct[F]) =
+proc serializeStructField*(self: var SerializeStruct, key: static[string], value: auto) =
+  self.serializeMapEntry(key, value)
+
+
+proc endStruct*(self: var SerializeStruct) =
   self.endMap()
 
-# SerializeSeqMap impl
-proc serializeSeqMapKey*[F; T](self: var SerializeSeqMap[F], key: T) =
-  self.serializeMapKey(key)
 
-proc serializeSeqMapValue*[F; T](self: var SerializeSeqMap[F], v: T) =
-  self.serializeMapValue(v)
+proc toString*(value: auto): string =
+  mixin serialize
 
-proc endSeqMap*[F](self: var SerializeSeqMap[F]) =
-  self.endMap()
+  var ser = initJsonSerializer(initCompactFormatter())
+  value.serialize(ser)
+  result = ser.writer
 
-proc toWriter*[T; F](writer: OutputStream, v: T, formatter: F) =
-  var ser = initJsonSerializer[F](writer, formatter)
-  v.serialize(ser)
 
-proc toString*[T](v: T): string =
-  var stream = memoryOutput()
-  toWriter(stream, v, initCompactFormatter())
-  result = stream.getOutput(string)
+proc toPrettyString*(value: auto): string =
+  mixin serialize
 
-proc toPrettyString*[T](v: T): string =
-  var stream = memoryOutput()
-  toWriter(stream, v, initPrettyFormatter([' '.byte, ' '.byte, ' '.byte, ' '.byte]))
-  result = stream.getOutput(string)
-{.pop.}
+  var ser = initJsonSerializer(initPrettyFormatter())
+  value.serialize(ser)
+  result = ser.writer
+
+when defined(release):
+  {.pop.}

@@ -1,3 +1,8 @@
-import deser_json/ser/[ser, formatter]
+import ser/[
+  ser,
+  formatter
+]
 
-export ser, formatter
+export
+  ser,
+  formatter

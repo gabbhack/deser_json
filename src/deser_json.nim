@@ -1,3 +1,8 @@
-import deser_json/[des]
+import deser_json/[
+  des,
+  ser
+]
 
-export des
+export
+  des,
+  ser
