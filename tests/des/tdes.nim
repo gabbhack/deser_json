@@ -2,10 +2,15 @@ discard """
   matrix: "; -d:release; --gc:orc; -d:release --gc:orc"
 """
 
-import std/[unittest, options, tables]
+import std/[
+  unittest,
+  options,
+  tables
+]
 
-import deser
-import deser_json/des
+import
+  deser,
+  deser_json/des
 
 type
   Struct = object
