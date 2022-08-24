@@ -7,8 +7,8 @@ import formatter
 
 type
   JsonSerializer*[F] = object
-    writer: string
-    formatter: F
+    writer*: string
+    formatter*: F
   
   State* = enum
     Empty,
@@ -206,22 +206,5 @@ proc serializeStructField*(self: var SerializeStruct, key: static[string], value
 
 proc endStruct*(self: var SerializeStruct) =
   self.endMap()
-
-
-proc toString*(value: auto): string =
-  mixin serialize
-
-  var ser = initJsonSerializer(initCompactFormatter())
-  value.serialize(ser)
-  result = ser.writer
-
-
-proc toPrettyString*(value: auto): string =
-  mixin serialize
-
-  var ser = initJsonSerializer(initPrettyFormatter([' ', ' ', ' ', ' ']))
-  value.serialize(ser)
-  result = ser.writer
-
 when defined(release):
   {.pop.}

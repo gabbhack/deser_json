@@ -6,8 +6,8 @@ import deser/des
 
 type
   Deserializer* = object
-    source: string
-    pos: int
+    source*: string
+    pos*: int
   
   SeqAccess = object
     deserializer: ptr Deserializer
@@ -91,17 +91,6 @@ proc isNull(self: var Deserializer): bool =
     self.source[self.pos+1] == 'u' and
     self.source[self.pos+2] == 'l' and
     self.source[self.pos+3] == 'l'
-
-
-func fromString*(Self: typedesc, input: sink string): Self =
-  mixin deserialize
-
-  var deserializer = Deserializer(
-    source: input,
-    pos: 0
-  )
-  
-  Self.deserialize(deserializer)
 
 
 proc deserializeAny*(self: var Deserializer, visitor: auto): visitor.Value =

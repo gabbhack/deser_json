@@ -20,6 +20,10 @@ deser_json provides three procedures:
 1. `fromString` for deserialization
 
 ```nim
+import
+  deser,
+  deser_json
+
 var some = [1, 2, 3]
 
 echo some.toString()
