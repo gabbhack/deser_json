@@ -3,13 +3,13 @@ import des/des
 export des
 
 
-func fromString*(Self: typedesc, input: sink string): Self {.inline.} = ##[
+func fromJson*(Self: typedesc, input: sink string): Self {.inline.} = ##[
 Deserialize your type from string. Accepts only type that implement `deserialize` procedure.
 ]##
   runnableExamples:
     import deser
 
-    let integer = int.fromString("123")
+    let integer = int.fromJson("123")
     assert integer == 123
 
   mixin deserialize
