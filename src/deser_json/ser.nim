@@ -8,13 +8,13 @@ export
   formatter
 
 
-func toString*(value: auto): string {.inline.} = ##[
+func toJson*(value: auto): string {.inline.} = ##[
 Serialize your value to string. Accepts only type that implement `serialize` procedure.
 ]##
   runnableExamples:
     import deser
 
-    let str = 123.toString()
+    let str = 123.toJson()
     assert str == "123"
 
   mixin serialize
@@ -24,13 +24,13 @@ Serialize your value to string. Accepts only type that implement `serialize` pro
   result = ser.writer
 
 
-func toPrettyString*(value: auto): string {.inline.} = ##[
+func toPrettyJson*(value: auto): string {.inline.} = ##[
 Serialize your value to pretty string. Accepts only type that implement `serialize` procedure.
 ]##
   runnableExamples:
     import deser
 
-    let str = 123.toPrettyString()
+    let str = 123.toPrettyJson()
     assert str == "123"
 
   mixin serialize

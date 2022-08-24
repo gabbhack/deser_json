@@ -15,9 +15,9 @@
 First, install [deser](https://github.com/gabbhack/deser) via `nimble install deser`
 
 deser_json provides three procedures:
-1. `toString` for serialization
-1. `toPrettyString` for pretty serialization
-1. `fromString` for deserialization
+1. `toJson` for serialization
+1. `toPrettyJson` for pretty serialization
+1. `fromJson` for deserialization
 
 ```nim
 import
@@ -26,9 +26,9 @@ import
 
 var some = [1, 2, 3]
 
-echo some.toString()
+echo some.toJson()
 
-some = fromString(typeof(some), "[1, 2, 3]")
+some = fromJson(typeof(some), "[1, 2, 3]")
 ```
 
 See the [deser documentation](https://deser.nim.town/deser.html) for a complete example.
