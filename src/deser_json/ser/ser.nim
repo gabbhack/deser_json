@@ -1,9 +1,10 @@
 import std/[
   options
 ]
-import deser
+import
+  deser,
+  formatter
 
-import formatter
 
 type
   JsonSerializer*[F] = object

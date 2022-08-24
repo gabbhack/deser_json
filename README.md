@@ -42,4 +42,5 @@ distributed under licenses different than the deser_json.
 <a href="THIRD-PARTY-NOTICES.TXT">THIRD-PARTY-NOTICES.TXT</a>
 
 ## Acknowledgements
+- [serde_json](https://github.com/serde-rs/json), for all the ideas I stole
 - [jsony](https://github.com/treeform/jsony), for json parser
