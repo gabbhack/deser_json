@@ -11,6 +11,24 @@
 
 ---
 
+## Usage
+First, install [deser](https://github.com/gabbhack/deser) via `nimble install deser`
+
+deser_json provides three procedures:
+1. `toString` for serialization
+1. `toPrettyString` for pretty serialization
+1. `fromString` for deserialization
+
+```nim
+var some = [1, 2, 3]
+
+echo some.toString()
+
+some = fromString(typeof(some), "[1, 2, 3]")
+```
+
+See the [deser documentation](https://deser.nim.town/deser.html) for a complete example.
+
 ## License
 Licensed under <a href="LICENSE">MIT license</a>.
 

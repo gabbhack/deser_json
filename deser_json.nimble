@@ -5,7 +5,7 @@ license     = "MIT"
 
 srcDir = "src"
 
-requires "nim >= 1.6.0, jsony == 1.1.3"
+requires "nim >= 1.6.0, deser >= 0.2.0, jsony == 1.1.3"
 
 task test, "Run tests":
   exec "testament all"
