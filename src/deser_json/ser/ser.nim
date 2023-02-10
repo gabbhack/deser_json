@@ -33,7 +33,6 @@ when defined(release):
 proc initJsonSerializer*[F](formatter: F): JsonSerializer[F] =
   result = JsonSerializer[F](writer: newStringOfCap(64), formatter: formatter)
 
-
 proc initCompound*[F](ser: var JsonSerializer[F], state: State): Compound[F] =
   result = Compound[F](ser: ser.addr, state: state)
 
@@ -43,54 +42,41 @@ implSerializer(JsonSerializer, public=true)
 proc serializeBool(self: var JsonSerializer, value: bool) =
   self.formatter.writeBool(self.writer, value)
 
-
 proc serializeInt8*(self: var JsonSerializer, value: int8) =
   self.formatter.writeInt(self.writer, value)
-
 
 proc serializeInt16*(self: var JsonSerializer, value: int16) =
   self.formatter.writeInt(self.writer, value)
 
-
 proc serializeInt32*(self: var JsonSerializer, value: int32) =
   self.formatter.writeInt(self.writer, value)
-
 
 proc serializeInt64*(self: var JsonSerializer, value: int64) =
   self.formatter.writeInt(self.writer, value)
 
-
 proc serializeUint8*(self: var JsonSerializer, value: uint8) =
   self.formatter.writeInt(self.writer, value)
-
 
 proc serializeUint16*(self: var JsonSerializer, value: uint16) =
   self.formatter.writeInt(self.writer, value)
 
-
 proc serializeUint32*(self: var JsonSerializer, value: uint32) =
   self.formatter.writeInt(self.writer, value)
-
 
 proc serializeUint64*(self: var JsonSerializer, value: uint64) =
   self.formatter.writeInt(self.writer, value)
 
-
 proc serializeFloat32*(self: var JsonSerializer, value: float32) =
   self.formatter.writeFloat(self.writer, value)
-
 
 proc serializeFloat64*(self: var JsonSerializer, value: float64) =
   self.formatter.writeFloat(self.writer, value)
 
-
-proc serializeString*(self: var JsonSerializer, value: string) =
+proc serializeString*(self: var JsonSerializer, value: openArray[char]) =
   formatEscapedStr(self.writer, self.formatter, value)
-
 
 proc serializeChar(self: var JsonSerializer, value: char) =
   self.serializeString($value)
-
 
 proc serializeBytes*(self: var JsonSerializer, value: openArray[byte]) =
   var state = self.serializeSeq(some value.len)
@@ -98,20 +84,16 @@ proc serializeBytes*(self: var JsonSerializer, value: openArray[byte]) =
     state.serializeSeqElement(b)
   state.endSeq()
 
-
 proc serializeNone*(self: var JsonSerializer) =
   self.formatter.writeNull(self.writer)
-
 
 proc serializeSome*(self: var JsonSerializer, value: auto)=
   mixin serialize
 
   value.serialize(self)
 
-
 proc serializeEnum*(self: var JsonSerializer, value: enum) =
   self.serializeString($value)
-
 
 proc serializeSeq*[F](self: var JsonSerializer[F], len: Option[int]): SerializeSeq[F] =
   self.formatter.beginArray(self.writer)
@@ -121,10 +103,8 @@ proc serializeSeq*[F](self: var JsonSerializer[F], len: Option[int]): SerializeS
   else:
     result = initCompound[F](self, State.First)
 
-
 proc serializeArray*[F](self: var JsonSerializer[F], len: static[int]): SerializeArray[F] =
   result = serializeSeq[F](self, some len)
-
 
 proc serializeMap*[F](self: var JsonSerializer[F], len: Option[int]): SerializeMap[F] =
   self.formatter.beginObject(self.writer)
@@ -134,10 +114,8 @@ proc serializeMap*[F](self: var JsonSerializer[F], len: Option[int]): SerializeM
   else:
     result = initCompound[F](self, State.First)
 
-
 proc serializeStruct*[F](self: var JsonSerializer[F], name: static[string]): SerializeStruct[F] =
   result = serializeMap[F](self, none int)
-
 
 # SerializeArray impl
 implSerializeArray(SerializeArray, public=true)
@@ -145,10 +123,8 @@ implSerializeArray(SerializeArray, public=true)
 proc serializeArrayElement*(self: var SerializeArray, value: auto) =
   self.serializeSeqElement(value)
 
-
 proc endArray*(self: var SerializeArray) =
   self.endSeq()
-
 
 # SerializeSeq impl
 implSerializeSeq(SerializeSeq, public=true)
@@ -167,7 +143,6 @@ proc endSeq*(self: var SerializeSeq) =
   if self.state != State.Empty:
     self.ser[].formatter.endArray(self.ser[].writer)
 
-
 # SerializeMap impl
 implSerializeMap(SerializeMap, public=true)
 
@@ -184,7 +159,6 @@ proc serializeMapKey*(self: var SerializeMap, key: auto) =
 
     self.ser[].formatter.endObjectKey(self.ser[].writer)
 
-
 proc serializeMapValue*(self: var SerializeMap, value: auto) =
   mixin serialize
 
@@ -192,18 +166,15 @@ proc serializeMapValue*(self: var SerializeMap, value: auto) =
   value.serialize(self.ser[])
   self.ser[].formatter.endObjectValue(self.ser[].writer)
 
-
 proc endMap*(self: var SerializeMap) =
   if self.state != State.Empty:
     self.ser[].formatter.endObject(self.ser[].writer)
-
 
 # SerializeStruct impl
 implSerializeStruct(SerializeStruct, public=true)
 
 proc serializeStructField*(self: var SerializeStruct, key: static[string], value: auto) =
   self.serializeMapEntry(key, value)
-
 
 proc endStruct*(self: var SerializeStruct) =
   self.endMap()

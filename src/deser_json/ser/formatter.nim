@@ -1,4 +1,6 @@
-import std/[enumerate]
+import std/[
+  enumerate
+]
 
 
 type
@@ -73,12 +75,15 @@ const
 
 when defined(release):
   {.push inline.}
-proc initCompactFormatter*(): CompactFormatter = CompactFormatter()
 
+proc add(str: var string, slice: openArray[char]) =
+  for i in slice:
+    str.add i
+
+proc initCompactFormatter*(): CompactFormatter = CompactFormatter()
 
 proc initPrettyFormatter*[Size](indent: array[Size, char]): PrettyFormatter[Size] =
   result = PrettyFormatter[Size](currentIndex: 0, hasValue: false, indent: indent)
-
 
 proc fromEscapeTable*(self: typedesc[CharEscape], escape: char, b: char): CharEscape =
   case escape
@@ -101,8 +106,7 @@ proc fromEscapeTable*(self: typedesc[CharEscape], escape: char, b: char): CharEs
   else:
     raise newException(Defect, "Unreachable")
 
-
-proc formatEscapedStrContents*(writer: var string, formatter: var auto, v: string) =  
+proc formatEscapedStrContents*(writer: var string, formatter: var auto, v: openArray[char]) =  
   var start = 0
 
   for i, b in enumerate(v):
@@ -119,21 +123,17 @@ proc formatEscapedStrContents*(writer: var string, formatter: var auto, v: strin
   if start != v.len:
     formatter.writeStringFragment(writer, v[start..v.high])
 
-
-proc formatEscapedStr*(writer: var string, formatter: var auto, v: string) =
+proc formatEscapedStr*(writer: var string, formatter: var auto, v: openArray[char]) =
   formatter.beginString(writer)
   formatEscapedStrContents(writer, formatter, v)
   formatter.endString(writer)
-
 
 # CompactFormatter
 proc writeNull*(self: var (CompactFormatter | PrettyFormatter), writer: var string) =
   writer.add "null"
 
-
 proc writeBool*(self: var (CompactFormatter | PrettyFormatter), writer: var string, v: bool) =
   writer.add $v
-
 
 const lookup = block:
   ## Generate 00, 01, 02 ... 99 pairs.
@@ -143,7 +143,6 @@ const lookup = block:
       s.add("0")
     s.add($i)
   s
-
 
 proc writeInt(self: var (CompactFormatter | PrettyFormatter), writer: var string, v: SomeUnsignedInt) =
   if v == 0:
@@ -168,7 +167,6 @@ proc writeInt(self: var (CompactFormatter | PrettyFormatter), writer: var string
     writer.add digits[p]
     dec p
 
-
 proc writeInt(self: var (CompactFormatter | PrettyFormatter), writer: var string, v: SomeSignedInt) =
   if v < 0:
     writer.add '-'
@@ -176,26 +174,20 @@ proc writeInt(self: var (CompactFormatter | PrettyFormatter), writer: var string
   else:
     self.writeInt(writer, v.uint64)
 
-
 proc writeInt*(self: var (CompactFormatter | PrettyFormatter), writer: var string, v: SomeInteger) =
   self.writeInt(writer, v)
-
 
 proc writeFloat*(self: var (CompactFormatter | PrettyFormatter), writer: var string, v: SomeFloat) =
   writer.add $v
 
-
 proc beginString*(self: var (CompactFormatter | PrettyFormatter), writer: var string) =
   writer.add "\""
-
 
 proc endString*(self: var (CompactFormatter | PrettyFormatter), writer: var string) =
   writer.add "\""
 
-
-proc writeStringFragment*(self: var (CompactFormatter | PrettyFormatter), writer: var string, fragment: string) =
+proc writeStringFragment*(self: var (CompactFormatter | PrettyFormatter), writer: var string, fragment: openArray[char]) =
   writer.add fragment
-
 
 proc writeCharEscape*(self: var (CompactFormatter | PrettyFormatter), writer: var string, charEscape: CharEscape) =
   let str = case charEscape.kind
@@ -231,52 +223,40 @@ proc writeCharEscape*(self: var (CompactFormatter | PrettyFormatter), writer: va
   
   writer.add str
 
-
 proc beginArray*(self: var CompactFormatter, writer: var string) =
   writer.add '['
 
-
 proc endArray*(self: var CompactFormatter, writer: var string)  =
   writer.add ']'
-
 
 proc beginArrayValue*(self: var CompactFormatter, writer: var string, first: bool) =
   if not first:
     writer.add ','
 
-
 proc endArrayValue*(self: var CompactFormatter, writer: var string) =
   discard
-
 
 proc beginObject*(self: var CompactFormatter, writer: var string) =
   writer.add '{'
 
-
 proc endObject*(self: var CompactFormatter, writer: var string) =
   writer.add '}'
-
 
 proc beginObjectKey*(self: var CompactFormatter, writer: var string, first: bool) =
   if not first:
     writer.add ','
 
-
 proc endObjectKey*(self: var CompactFormatter, writer: var string) =
   discard
-
 
 proc beginObjectValue*(self: var CompactFormatter, writer: var string) =
   writer.add ':'
 
-
 proc endObjectValue*(self: var CompactFormatter, writer: var string) =
   discard
 
-
-proc writeRawFragment*(self: var CompactFormatter, writer: var string, fragment: string) =
+proc writeRawFragment*(self: var CompactFormatter, writer: var string, fragment: openArray[char]) =
   writer.add fragment
-
 
 # PrettyFormatter
 proc indent(writer: var string, n: uint, s: openArray[char]) =
@@ -284,12 +264,10 @@ proc indent(writer: var string, n: uint, s: openArray[char]) =
     for i in s:
       writer.add i
 
-
 proc beginArray*(self: var PrettyFormatter, writer: var string) =
   inc self.currentIndex
   self.hasValue = false
   writer.add '['
-
 
 proc endArray*(self: var PrettyFormatter, writer: var string) =
   dec self.currentIndex
@@ -300,7 +278,6 @@ proc endArray*(self: var PrettyFormatter, writer: var string) =
   
   writer.add ']'
 
-
 proc beginArrayValue*(self: var PrettyFormatter, writer: var string, first: bool) =
   if first:
     writer.add '\n'
@@ -309,16 +286,13 @@ proc beginArrayValue*(self: var PrettyFormatter, writer: var string, first: bool
   
   indent(writer, self.currentIndex, self.indent)
 
-
 proc endArrayValue*(self: var PrettyFormatter, writer: var string) =
   self.hasValue = true
-
 
 proc beginObject*(self: var PrettyFormatter, writer: var string) =
   inc self.currentIndex
   self.hasValue = false
   writer.add '{'
-
 
 proc endObject*(self: var PrettyFormatter, writer: var string) =
   dec self.currentIndex
@@ -329,7 +303,6 @@ proc endObject*(self: var PrettyFormatter, writer: var string) =
 
   writer.add '}'
 
-
 proc beginObjectKey*(self: var PrettyFormatter, writer: var string, first: bool) =
   if first:
     writer.add '\n'
@@ -337,22 +310,17 @@ proc beginObjectKey*(self: var PrettyFormatter, writer: var string, first: bool)
     writer.add ",\n"
   indent(writer, self.currentIndex, self.indent)
 
-
 proc endObjectKey*(self: var PrettyFormatter, writer: var string) =
   discard
-
 
 proc beginObjectValue*(self: var PrettyFormatter, writer: var string) =
   writer.add ": "
 
-
 proc endObjectValue*(self: var PrettyFormatter, writer: var string) =
   self.hasValue = true
 
-
-proc writeRawFragment*(self: var PrettyFormatter, writer: var string, fragment: string)=
+proc writeRawFragment*(self: var PrettyFormatter, writer: var string, fragment: openArray[char])=
   writer.add fragment
-
 
 when defined(release):
   {.pop.}
