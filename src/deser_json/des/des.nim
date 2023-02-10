@@ -1,4 +1,7 @@
-import std/[strformat, options]
+import std/[
+  strformat,
+  options
+]
 
 import deser_json/jsony
 import deser/des
@@ -49,7 +52,7 @@ template eatChar(self: var Deserializer, c: char) =
     raiseUnexpectedError(self, $c, $self.source[self.pos])
 
 proc parseBool(self: var Deserializer): bool =
-  parseHook(self.source, self.pos, result)
+  jsony.parseHook(self.source, self.pos, result)
 
 proc parseInteger(self: var Deserializer, T: typedesc[SomeInteger]): T =
   when not defined(deserJsonOverflowChecksOff):
@@ -58,23 +61,23 @@ proc parseInteger(self: var Deserializer, T: typedesc[SomeInteger]): T =
     else:
       var temp: uint64
 
-    parseHook(self.source, self.pos, temp)
+    jsony.parseHook(self.source, self.pos, temp)
 
     if temp in T.low..T.high:
       result = T(temp)
     else:
       self.raiseUnexpectedError($T, $temp)
   else:
-    parseHook(self.source, self.pos, result)
+    jsony.parseHook(self.source, self.pos, result)
 
 proc parseFloat(self: var Deserializer, T: typedesc[SomeFloat]): T =
-  parseHook(self.source, self.pos, result)
+  jsony.parseHook(self.source, self.pos, result)
 
 proc parseChar(self: var Deserializer): char =
-  parseHook(self.source, self.pos, result)
+  jsony.parseHook(self.source, self.pos, result)
 
 proc parseString(self: var Deserializer): string =
-  parseHook(self.source, self.pos, result)
+  jsony.parseHook(self.source, self.pos, result)
 
 proc isNull(self: var Deserializer): bool =
   self.pos + 3 < self.source.len and
