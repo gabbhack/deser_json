@@ -32,11 +32,6 @@ const whiteSpace = {' ', '\n', '\t', '\r'}
 when defined(release):
   {.push checks: off, inline.}
 
-type
-  SomeTable*[K, V] = Table[K, V] | OrderedTable[K, V] |
-    TableRef[K, V] | OrderedTableRef[K, V]
-  RawJson* = distinct string
-
 proc parseHook*(s: openArray[char], i: var int, v: var char)
 
 template error(msg: string, i: int) =
