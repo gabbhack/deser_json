@@ -118,6 +118,7 @@ proc parseHook*(s: openArray[char], i: var int, v: var BiggestUInt) =
     var
       v2: BiggestUInt = 0
       startI = i
+
     while i < s.len and s[i] in {'0'..'9'}:
       v2 = v2 * 10 + (s[i].ord - '0'.ord).BiggestUInt
       inc i
@@ -137,7 +138,7 @@ proc parseHook*(s: openArray[char], i: var int, v: var BiggestInt) =
       var v2: BiggestUInt
       inc i
       parseHook(s, i, v2)
-      if v2 > (-BiggestInt.low).BiggestUInt:
+      if v2 > BiggestInt.high.BiggestUInt:
         error(&"Invalid value: `{v2}`, expected: `{$BiggestInt}`.", i)
       else:
         v = -type(v)(v2)
@@ -153,6 +154,7 @@ proc parseHook*(s: string, i: var int, v: var SomeFloat) =
   ## Will parse float32 and float64.
   var f: float
   eatSpace(s, i)
+
   let chars = parseutils.parseFloat(s, f, i)
   if chars == 0:
     error("Failed to parse a float.", i)
