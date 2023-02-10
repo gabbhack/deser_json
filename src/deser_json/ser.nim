@@ -8,7 +8,7 @@ export
   formatter
 
 
-func toJson*(value: auto): string {.inline.} = ##[
+proc toJson*(value: auto): string {.inline.} = ##[
 Serialize your value to string. Accepts only type that implement `serialize` procedure.
 ]##
   runnableExamples:
@@ -24,7 +24,7 @@ Serialize your value to string. Accepts only type that implement `serialize` pro
   result = ser.writer
 
 
-func toPrettyJson*(value: auto): string {.inline.} = ##[
+proc toPrettyJson*(value: auto): string {.inline.} = ##[
 Serialize your value to pretty string. Accepts only type that implement `serialize` procedure.
 ]##
   runnableExamples:
