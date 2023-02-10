@@ -99,9 +99,9 @@ proc deserializeAny*(self: var Deserializer, visitor: auto): visitor.Value =
     of 'n':
       result = self.deserializeOption(visitor)
     of '0'..'9', '+':
-      result = self.deserializeInt64(visitor)
-    of '-':
       result = self.deserializeUint64(visitor)
+    of '-':
+      result = self.deserializeInt64(visitor)
     else:
       self.raiseUnexpectedError("object, array, string, booolean or integer", $ch)
   else:
@@ -178,6 +178,7 @@ proc deserializeBytes*(self: var Deserializer, visitor: auto): visitor.Value =
 proc deserializeOption*(self: var Deserializer, visitor: auto): visitor.Value =
   mixin visitNone, visitSome
 
+  self.eatSpace()
   if self.isNull:
     self.pos += 4
     visitor.visitNone
@@ -224,7 +225,7 @@ proc nextElementSeed*(self: var SeqAccess, seed: auto): Option[seed.Value] =
   else:
     if not self.first:
       self.deserializer[].eatChar(',')
-  
+
     self.first = false
 
     some seed.deserialize(self.deserializer[])
