@@ -10,7 +10,14 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]#
 import std/[
-  json, options, sets, strutils, tables, typetraits, unicode
+  json,
+  options,
+  sets,
+  strutils,
+  tables,
+  typetraits,
+  unicode,
+  strformat
 ]
 
 from std/parseutils import nil
@@ -102,23 +109,23 @@ proc parseHook*(s: openArray[char], i: var int, v: var bool) =
     else:
       error("Boolean true or false expected.", i)
 
-proc parseHook*(s: openArray[char], i: var int, v: var SomeUnsignedInt) =
+proc parseHook*(s: openArray[char], i: var int, v: var BiggestUInt) =
   ## Will parse unsigned integers.
   when nimvm:
     v = type(v)(parseInt(parseSymbol(s, i)))
   else:
     eatSpace(s, i)
     var
-      v2: uint64 = 0
+      v2: BiggestUInt = 0
       startI = i
     while i < s.len and s[i] in {'0'..'9'}:
-      v2 = v2 * 10 + (s[i].ord - '0'.ord).uint64
+      v2 = v2 * 10 + (s[i].ord - '0'.ord).BiggestUInt
       inc i
     if startI == i:
       error("Number expected.", i)
     v = type(v)(v2)
 
-proc parseHook*(s: openArray[char], i: var int, v: var SomeSignedInt) =
+proc parseHook*(s: openArray[char], i: var int, v: var BiggestInt) =
   ## Will parse signed integers.
   when nimvm:
     v = type(v)(parseInt(parseSymbol(s, i)))
@@ -127,17 +134,20 @@ proc parseHook*(s: openArray[char], i: var int, v: var SomeSignedInt) =
     if i < s.len and s[i] == '+':
       inc i
     if i < s.len and s[i] == '-':
-      var v2: uint64
+      var v2: BiggestUInt
       inc i
       parseHook(s, i, v2)
-      v = -type(v)(v2)
+      if v2 > (-BiggestInt.low).BiggestUInt:
+        error(&"Invalid value: `{v2}`, expected: `{$BiggestInt}`.", i)
+      else:
+        v = -type(v)(v2)
     else:
-      var v2: uint64
+      var v2: BiggestUInt
       parseHook(s, i, v2)
-      try:
+      if v2 > BiggestInt.high.BiggestUInt:
+        error(&"Invalid value: `{v2}`, expected: `{$BiggestInt}`.", i)
+      else:
         v = type(v)(v2)
-      except:
-        error("Number type to small to contain the number.", i)
 
 proc parseHook*(s: string, i: var int, v: var SomeFloat) =
   ## Will parse float32 and float64.

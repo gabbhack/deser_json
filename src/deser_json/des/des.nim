@@ -55,20 +55,17 @@ proc parseBool(self: var Deserializer): bool =
   jsony.parseHook(self.source, self.pos, result)
 
 proc parseInteger(self: var Deserializer, T: typedesc[SomeInteger]): T =
-  when not defined(deserJsonOverflowChecksOff):
-    when T is SomeSignedInt:
-      var temp: int64
-    else:
-      var temp: uint64
-
-    jsony.parseHook(self.source, self.pos, temp)
-
-    if temp in T.low..T.high:
-      result = T(temp)
-    else:
-      self.raiseUnexpectedError($T, $temp)
+  when T is SomeSignedInt:
+    var temp: BiggestInt
   else:
-    jsony.parseHook(self.source, self.pos, result)
+    var temp: BiggestUInt
+
+  jsony.parseHook(self.source, self.pos, temp)
+
+  if temp in T.low..T.high:
+    result = T(temp)
+  else:
+    self.raiseUnexpectedError($T, $temp)
 
 proc parseFloat(self: var Deserializer, T: typedesc[SomeFloat]): T =
   jsony.parseHook(self.source, self.pos, result)
