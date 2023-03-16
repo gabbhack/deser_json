@@ -1,11 +1,11 @@
-version     = "0.1.2"
+version     = "0.2.0"
 author      = "gabbhack"
 description = "JSON-Binding for deser"
 license     = "MIT"
 
 srcDir = "src"
 
-requires "nim >= 1.6.0, deser >= 0.2.0, jsony == 1.1.3"
+requires "nim >= 1.6.0, deser >= 0.2.0"
 
 task test, "Run tests":
   exec "testament all"

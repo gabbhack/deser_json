@@ -3,7 +3,7 @@ import des/des
 export des
 
 
-func fromJson*(Self: typedesc, input: sink string): Self {.inline.} = ##[
+proc fromJson*(Self: typedesc, input: sink string): Self {.inline.} = ##[
 Deserialize your type from string. Accepts only type that implement `deserialize` procedure.
 ]##
   runnableExamples:
